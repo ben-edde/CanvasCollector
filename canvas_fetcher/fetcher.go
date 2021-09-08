@@ -3,42 +3,30 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
+	"log"
+	"os"
 
 	"github.com/spf13/viper"
 )
 
-func getData(url string, token string) {
-	client := &http.Client{}
-	req, _ := http.NewRequest("GET", url, nil)
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
-	req.Header.Set("Content-type", "application/json")
-	req.Header.Set("enrollment_state", "active")
-	req.Header.Set("per_page", "32767")
-	resp, err := client.Do(req)
+func getData(cclient ConnClient) {
+	response_body := cclient.new_request("courses", "", "", "")
+	//cclient.download_file(file_url)
+	show_result(response_body)
+}
 
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	defer resp.Body.Close()
-
-	//read body as bytes rom reader
-	body, _ := ioutil.ReadAll(resp.Body)
-
-	// save output for study if needed
-	// os.WriteFile("record.json", body, 0644)
+func show_result(response_body []byte) {
+	//os.WriteFile("record.json", response_body, 0644)
 
 	// list of json object, each obj is map of string to interface(actually string)
 	var itemList []map[string]interface{}
 
 	// read from bytes
-	json.Unmarshal(body, &itemList)
+	json.Unmarshal(response_body, &itemList)
 
 	// each item of itemList is a map, access value with key directly
 	for _, item := range itemList {
-		fmt.Printf("course_code: %s\n", item["course_code"])
+		fmt.Printf("item: %s\n", item)
 	}
 }
 
@@ -57,10 +45,20 @@ func readConfig() map[string]string {
 	return CFG
 }
 
+func set_log() *os.File {
+	f, err := os.OpenFile("testing.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatalf("error opening file: %v", err)
+	}
+	log.SetOutput(f)
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	return f
+}
+
 func main() {
+	log_file := set_log()
 	CFG := readConfig()
-	var resource_type = "courses"
-	// TODO: find better way to handle url concat
-	url := fmt.Sprintf("%s/%s", CFG["API_ENDPOINT"], resource_type)
-	getData(url, CFG["TOKEN"])
+	conn_clint := ConnClient{CFG["API_ENDPOINT"], CFG["TOKEN"], CFG["DESTINATION"]}
+	getData(conn_clint)
+	defer log_file.Close()
 }
