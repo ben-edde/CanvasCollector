@@ -3,9 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"image"
+	"image/draw"
 	"log"
 	"os"
 
+	"github.com/faiface/gui/win"
 	"github.com/spf13/viper"
 )
 
@@ -54,11 +57,33 @@ func set_log() *os.File {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	return f
 }
+func run() {
+	// do everything here, this becomes the new main function
+	w, err := win.New(win.Title("faiface/win"), win.Size(800, 600), win.Resizable())
+	if err != nil {
+		panic(err)
+	}
 
+	w.Draw() <- func(drw draw.Image) image.Rectangle {
+		r := image.Rect(200, 200, 600, 400)
+		draw.Draw(drw, r, image.White, image.ZP, draw.Src)
+		return r
+	}
+
+	for event := range w.Events() {
+		switch event.(type) {
+		case win.WiClose:
+			close(w.Draw())
+		}
+	}
+}
 func main() {
-	log_file := set_log()
-	CFG := readConfig()
-	conn_clint := ConnClient{CFG["API_ENDPOINT"], CFG["TOKEN"], CFG["DESTINATION"]}
-	getData(conn_clint)
-	defer log_file.Close()
+	// log_file := set_log()
+	// CFG := readConfig()
+	// conn_clint := ConnClient{CFG["API_ENDPOINT"], CFG["TOKEN"], CFG["DESTINATION"]}
+	// getData(conn_clint)
+	// defer log_file.Close()
+
+	mainthread.Run(run)
+
 }
