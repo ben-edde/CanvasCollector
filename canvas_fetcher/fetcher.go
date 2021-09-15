@@ -3,13 +3,13 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"image"
-	"image/draw"
 	"log"
 	"os"
 
-	"github.com/faiface/gui/win"
 	"github.com/spf13/viper"
+	"github.com/therecipe/qt/core"
+	"github.com/therecipe/qt/gui"
+	"github.com/therecipe/qt/qml"
 )
 
 func getData(cclient ConnClient) {
@@ -57,33 +57,20 @@ func set_log() *os.File {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	return f
 }
-func run() {
-	// do everything here, this becomes the new main function
-	w, err := win.New(win.Title("faiface/win"), win.Size(800, 600), win.Resizable())
-	if err != nil {
-		panic(err)
-	}
 
-	w.Draw() <- func(drw draw.Image) image.Rectangle {
-		r := image.Rect(200, 200, 600, 400)
-		draw.Draw(drw, r, image.White, image.ZP, draw.Src)
-		return r
-	}
-
-	for event := range w.Events() {
-		switch event.(type) {
-		case win.WiClose:
-			close(w.Draw())
-		}
-	}
-}
 func main() {
 	// log_file := set_log()
 	// CFG := readConfig()
 	// conn_clint := ConnClient{CFG["API_ENDPOINT"], CFG["TOKEN"], CFG["DESTINATION"]}
 	// getData(conn_clint)
 	// defer log_file.Close()
+	core.QCoreApplication_SetAttribute(core.Qt__AA_EnableHighDpiScaling, true)
 
-	mainthread.Run(run)
+	gui.NewQGuiApplication(len(os.Args), os.Args)
+
+	var app = qml.NewQQmlApplicationEngine(nil)
+	app.Load(core.NewQUrl3("main.qml", 0))
+
+	gui.QGuiApplication_Exec()
 
 }
