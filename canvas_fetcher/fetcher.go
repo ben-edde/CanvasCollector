@@ -7,9 +7,9 @@ import (
 	"os"
 
 	"github.com/spf13/viper"
-	"github.com/therecipe/qt/core"
-	"github.com/therecipe/qt/gui"
-	"github.com/therecipe/qt/qml"
+	// "github.com/therecipe/qt/core"
+	// "github.com/therecipe/qt/gui"
+	// "github.com/therecipe/qt/qml"
 )
 
 func getData(cclient ConnClient) {
@@ -29,7 +29,7 @@ func show_result(response_body []byte) {
 
 	// each item of itemList is a map, access value with key directly
 	for _, item := range itemList {
-		fmt.Printf("item: %s\n", item)
+		fmt.Printf("item: %s\n", item["course_code"])
 	}
 }
 
@@ -58,19 +58,25 @@ func set_log() *os.File {
 	return f
 }
 
+func mode_gui() {
+	// core.QCoreApplication_SetAttribute(core.Qt__AA_EnableHighDpiScaling, true)
+
+	// gui.NewQGuiApplication(len(os.Args), os.Args)
+
+	// var app = qml.NewQQmlApplicationEngine(nil)
+	// app.Load(core.NewQUrl3("main.qml", 0))
+
+	// gui.QGuiApplication_Exec()
+}
+
+func mode_default(CFG map[string]string) {
+	conn_clint := ConnClient{CFG["API_ENDPOINT"], CFG["TOKEN"], CFG["DESTINATION"]}
+	getData(conn_clint)
+}
+
 func main() {
-	// log_file := set_log()
-	// CFG := readConfig()
-	// conn_clint := ConnClient{CFG["API_ENDPOINT"], CFG["TOKEN"], CFG["DESTINATION"]}
-	// getData(conn_clint)
-	// defer log_file.Close()
-	core.QCoreApplication_SetAttribute(core.Qt__AA_EnableHighDpiScaling, true)
-
-	gui.NewQGuiApplication(len(os.Args), os.Args)
-
-	var app = qml.NewQQmlApplicationEngine(nil)
-	app.Load(core.NewQUrl3("main.qml", 0))
-
-	gui.QGuiApplication_Exec()
-
+	log_file := set_log()
+	CFG := readConfig()
+	defer log_file.Close()
+	mode_default(CFG)
 }

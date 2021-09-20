@@ -51,7 +51,13 @@ func (client *ConnClient) new_request(context_type, context_id, resource_type, r
 	req, _ := http.NewRequest("GET", request_url, nil)
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", client.TOKEN))
 	req.Header.Set("Content-type", "application/json")
-	req.Header.Set("enrollment_state", "active")
+	req.Header.Add("enrollment_state", "active")
+	q := req.URL.Query()
+	// send as parameter instead of header
+	q.Add("per_page", "32767")
+	req.URL.RawQuery = q.Encode()
+	fmt.Printf("req: %v\n", req)
+
 	response, err := http_client.Do(req)
 	if err != nil {
 		log.Fatal(fmt.Sprintf("Error: %s\n", err))
