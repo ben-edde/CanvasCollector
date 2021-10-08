@@ -1,10 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
 
 	"github.com/spf13/viper"
 	// "github.com/therecipe/qt/core"
@@ -12,13 +16,10 @@ import (
 	// "github.com/therecipe/qt/qml"
 )
 
-func getData(cclient ConnClient) {
-	response_body := cclient.new_request("courses", "", "", "")
-	//cclient.download_file(file_url)
-	show_result(response_body)
-}
+func getData(cclient ConnClient, context string, context_id string, resource_type string, resources_id string) []map[string]interface{} {
 
-func show_result(response_body []byte) {
+	response_body := cclient.new_request(context, context_id, resource_type, resources_id)
+
 	//os.WriteFile("record.json", response_body, 0644)
 
 	// list of json object, each obj is map of string to interface(actually string)
@@ -27,9 +28,94 @@ func show_result(response_body []byte) {
 	// read from bytes
 	json.Unmarshal(response_body, &itemList)
 
+	return itemList
+}
+
+func accept_choices() []int {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Print("Enter choices: ")
+	raw_input, _ := reader.ReadString('\n')
+	raw_input = strings.TrimSpace(raw_input)
+	inputs := strings.Split(raw_input, " ")
+	choices := []int{}
+	for _, ele := range inputs {
+		idx, err := strconv.Atoi(ele)
+		if err != nil {
+			fmt.Printf("error: %s", err)
+		}
+		choices = append(choices, idx)
+		// 	fmt.Printf("%d: %s\n", idx, itemList[idx]["course_code"])
+	}
+	return choices
+}
+
+func course_handler(cclient ConnClient, course map[string]interface{}, parent_path string) {
+
+	course_path := ""
+	course_name := fmt.Sprintf("%v", course["name"])
+	if parent_path == "" {
+		course_path = course_name
+	} else {
+		course_path = filepath.Join(parent_path, course_name)
+	}
+	fmt.Println(course_path)
+	err := os.MkdirAll(course_path, os.ModePerm)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	foldersList := getData(cclient, "courses", fmt.Sprintf("%v", course["id"]), "folders", "")
+
+	// show_result(foldersList, "full_name")
+	for _, folder := range foldersList {
+		folder_handler(cclient, folder, course_path)
+	}
+}
+
+func folder_handler(cclient ConnClient, folder map[string]interface{}, parent_path string) {
+	folder_path := ""
+	folder_name := fmt.Sprintf("%v", folder["name"])
+	if parent_path == "" {
+		folder_path = folder_name
+	} else {
+		folder_path = filepath.Join(parent_path, folder_name)
+	}
+	fmt.Println(folder_path)
+	err := os.MkdirAll(folder_path, os.ModePerm)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	response_body := cclient.new_request_url(fmt.Sprintf("%v", folder["files_url"]))
+	var filesList []map[string]interface{}
+
+	// read from bytes
+	json.Unmarshal(response_body, &filesList)
+
+	// show_result(filesList, "filename")
+	for _, file := range filesList {
+		url := fmt.Sprintf("%v", file["url"])
+		filename := fmt.Sprintf("%v", file["filename"])
+		file_path := filepath.Join(folder_path, filename)
+		if _, err := os.Stat(file_path); err == nil {
+			fmt.Printf("file %s existed in %s", filename, folder_path)
+
+		} else if os.IsNotExist(err) {
+			cclient.download_file(url, filename, folder_path)
+			// fmt.Printf("downloading: %s/%s", folder_path, filename)
+		} else {
+			log.Fatal("Unknown error: %s", err)
+		}
+
+	}
+}
+
+func show_result(itemList []map[string]interface{}, column string) {
 	// each item of itemList is a map, access value with key directly
-	for _, item := range itemList {
-		fmt.Printf("item: %s\n", item["course_code"])
+	for idx, item := range itemList {
+		fmt.Printf("[%d] item:  %s\n", idx, item[column])
 	}
 }
 
@@ -70,8 +156,14 @@ func mode_gui() {
 }
 
 func mode_default(CFG map[string]string) {
+	//download all by default
 	conn_clint := ConnClient{CFG["API_ENDPOINT"], CFG["TOKEN"], CFG["DESTINATION"]}
-	getData(conn_clint)
+	coursesList := getData(conn_clint, "courses", "", "", "")
+	// show_result(coursesList, "course_code")
+	// chosen_index := accept_choices()
+	for _, course := range coursesList {
+		course_handler(conn_clint, course, CFG["DESTINATION"])
+	}
 }
 
 func main() {

@@ -16,7 +16,7 @@ type ConnClient struct {
 	DESTINATION  string
 }
 
-func (client *ConnClient) download_file(file_url, file_name string) {
+func (client *ConnClient) download_file(file_url, file_name, destination string) {
 	http_client := &http.Client{}
 	log.Printf("URL: %s\n", file_url)
 	req, _ := http.NewRequest("GET", file_url, nil)
@@ -26,7 +26,7 @@ func (client *ConnClient) download_file(file_url, file_name string) {
 		log.Fatal(fmt.Sprintf("Error: %s\n", err))
 	}
 	defer response.Body.Close()
-	out_file, err := os.Create(strings.Join([]string{client.DESTINATION, file_name}, "/"))
+	out_file, err := os.Create(strings.Join([]string{destination, file_name}, "/"))
 	if err != nil {
 		log.Fatal(fmt.Sprintf("Error: %s\n", err))
 	}
@@ -51,12 +51,12 @@ func (client *ConnClient) new_request(context_type, context_id, resource_type, r
 	req, _ := http.NewRequest("GET", request_url, nil)
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", client.TOKEN))
 	req.Header.Set("Content-type", "application/json")
-	req.Header.Add("enrollment_state", "active")
 	q := req.URL.Query()
 	// send as parameter instead of header
 	q.Add("per_page", "32767")
+	q.Add("enrollment_state", "active")
 	req.URL.RawQuery = q.Encode()
-	fmt.Printf("req: %v\n", req)
+	// fmt.Printf("req: %v\n", req)
 
 	response, err := http_client.Do(req)
 	if err != nil {
@@ -68,4 +68,29 @@ func (client *ConnClient) new_request(context_type, context_id, resource_type, r
 		log.Fatal(fmt.Sprintf("Error: %s\n", err))
 	}
 	return response_body
+}
+
+func (client *ConnClient) new_request_url(url string) []byte {
+	http_client := &http.Client{}
+	log.Printf("URL: %s\n", url)
+	req, _ := http.NewRequest("GET", url, nil)
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", client.TOKEN))
+	req.Header.Set("Content-type", "application/json")
+	q := req.URL.Query()
+	// send as parameter instead of header
+	q.Add("per_page", "32767")
+	req.URL.RawQuery = q.Encode()
+	// fmt.Printf("req: %v\n", req)
+
+	response, err := http_client.Do(req)
+	if err != nil {
+		log.Fatal(fmt.Sprintf("Error: %s\n", err))
+	}
+	defer response.Body.Close()
+	response_body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		log.Fatal(fmt.Sprintf("Error: %s\n", err))
+	}
+	return response_body
+
 }
