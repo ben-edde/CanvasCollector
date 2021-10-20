@@ -3,9 +3,11 @@ package main
 import (
 	"bufio"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
 	"os"
+	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -120,10 +122,13 @@ func show_result(itemList []map[string]interface{}, column string) {
 }
 
 // read config from file
-func readConfig() map[string]string {
+func readConfig(cfg_path *string) map[string]string {
 	CFG := make(map[string]string)
-	viper.SetConfigName("config")
-	viper.AddConfigPath("cfg")
+	cfg_dir, _ := path.Split(*cfg_path)
+	cfg_file := strings.ReplaceAll(path.Base(*cfg_path), path.Ext(*cfg_path), "")
+	viper.SetConfigName(cfg_file)
+	viper.AddConfigPath(cfg_dir)
+	// dir must be in /
 	err := viper.ReadInConfig()
 	if err != nil {
 		panic(fmt.Errorf("fatal error config file: %w", err))
@@ -134,8 +139,8 @@ func readConfig() map[string]string {
 	return CFG
 }
 
-func set_log() *os.File {
-	f, err := os.OpenFile("testing.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+func set_log(log_path *string) *os.File {
+	f, err := os.OpenFile(*log_path, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
 	}
@@ -166,9 +171,37 @@ func mode_default(CFG map[string]string) {
 	}
 }
 
+func check_path_exists(path_str string) (bool, error) {
+	dir, _ := path.Split(path_str)
+	if dir == "" {
+		dir, _ = os.Getwd()
+	}
+	_, err := os.Stat(dir)
+	if err == nil {
+		return true, nil
+	}
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	return false, err
+}
+
 func main() {
-	log_file := set_log()
-	CFG := readConfig()
+	cfg_path := flag.String("cfg", "cfg/config.yaml", "path to yaml config file")
+	log_path := flag.String("log", "fetcher.log", "path to log file")
+	flag.Parse()
+	exist, err := check_path_exists(*cfg_path)
+	if err != nil || !exist {
+		fmt.Printf("Config directory path (%s) exists: %v\nError: %v\n", *cfg_path, exist, err)
+		return
+	}
+	exist, err = check_path_exists(*log_path)
+	if err != nil || !exist {
+		fmt.Printf("Log path (%s) exists: %v\nError: %v\n", *log_path, exist, err)
+		return
+	}
+	log_file := set_log(log_path)
+	CFG := readConfig(cfg_path)
 	defer log_file.Close()
 	mode_default(CFG)
 }
