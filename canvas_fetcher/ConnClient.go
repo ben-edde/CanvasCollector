@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/md5"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -16,7 +17,7 @@ type ConnClient struct {
 	DESTINATION  string
 }
 
-func (client *ConnClient) download_file(file_url, file_name, destination string) {
+func (client *ConnClient) download_file(file_url, file_name, destination string) []byte {
 	http_client := &http.Client{}
 	log.Printf("URL: %s\n", file_url)
 	req, _ := http.NewRequest("GET", file_url, nil)
@@ -36,6 +37,13 @@ func (client *ConnClient) download_file(file_url, file_name, destination string)
 		log.Fatal(fmt.Sprintf("Error: %s\n", err))
 	}
 	log.Printf("Written %d byte(s) to file\n", n)
+	hash := md5.New()
+	_, err = io.Copy(hash, out_file)
+
+	if err != nil {
+		log.Fatal(fmt.Sprintf("Error: %s\n", err))
+	}
+	return hash.Sum(nil)
 }
 
 func (client *ConnClient) new_request(context_type, context_id, resource_type, resources_id string) []byte {

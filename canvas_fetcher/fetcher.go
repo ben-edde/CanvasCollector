@@ -12,15 +12,22 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/boltdb/bolt"
 	"github.com/spf13/viper"
 	// "github.com/therecipe/qt/core"
 	// "github.com/therecipe/qt/gui"
 	// "github.com/therecipe/qt/qml"
 )
 
-func getData(cclient ConnClient, context string, context_id string, resource_type string, resources_id string) []map[string]interface{} {
+type Fetcher struct {
+	db         *bolt.DB
+	con_client *ConnClient
+	cfg        map[string]string
+}
 
-	response_body := cclient.new_request(context, context_id, resource_type, resources_id)
+func (fetcher *Fetcher) getData(context string, context_id string, resource_type string, resources_id string) []map[string]interface{} {
+
+	response_body := fetcher.con_client.new_request(context, context_id, resource_type, resources_id)
 
 	//os.WriteFile("record.json", response_body, 0644)
 
@@ -51,7 +58,7 @@ func accept_choices() []int {
 	return choices
 }
 
-func course_handler(cclient ConnClient, course map[string]interface{}, parent_path string) {
+func (fetcher *Fetcher) course_handler(course map[string]interface{}, parent_path string) {
 
 	course_path := ""
 	course_name := fmt.Sprintf("%v", course["name"])
@@ -60,22 +67,22 @@ func course_handler(cclient ConnClient, course map[string]interface{}, parent_pa
 	} else {
 		course_path = filepath.Join(parent_path, course_name)
 	}
-	fmt.Println(course_path)
+	// fmt.Println(course_path)
 	err := os.MkdirAll(course_path, os.ModePerm)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	foldersList := getData(cclient, "courses", fmt.Sprintf("%v", course["id"]), "folders", "")
+	foldersList := fetcher.getData("courses", fmt.Sprintf("%v", course["id"]), "folders", "")
 
 	// show_result(foldersList, "full_name")
 	for _, folder := range foldersList {
-		folder_handler(cclient, folder, course_path)
+		fetcher.folder_handler(folder, course_path)
 	}
 }
 
-func folder_handler(cclient ConnClient, folder map[string]interface{}, parent_path string) {
+func (fetcher *Fetcher) folder_handler(folder map[string]interface{}, parent_path string) {
 	folder_path := ""
 	folder_name := fmt.Sprintf("%v", folder["name"])
 	if parent_path == "" {
@@ -83,14 +90,14 @@ func folder_handler(cclient ConnClient, folder map[string]interface{}, parent_pa
 	} else {
 		folder_path = filepath.Join(parent_path, folder_name)
 	}
-	fmt.Println(folder_path)
+	// fmt.Println(folder_path)
 	err := os.MkdirAll(folder_path, os.ModePerm)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	response_body := cclient.new_request_url(fmt.Sprintf("%v", folder["files_url"]))
+	response_body := fetcher.con_client.new_request_url(fmt.Sprintf("%v", folder["files_url"]))
 	var filesList []map[string]interface{}
 
 	// read from bytes
@@ -100,17 +107,34 @@ func folder_handler(cclient ConnClient, folder map[string]interface{}, parent_pa
 	for _, file := range filesList {
 		url := fmt.Sprintf("%v", file["url"])
 		filename := fmt.Sprintf("%v", file["filename"])
-		file_path := filepath.Join(folder_path, filename)
-		if _, err := os.Stat(file_path); err == nil {
-			fmt.Printf("file %s existed in %s", filename, folder_path)
-
-		} else if os.IsNotExist(err) {
-			cclient.download_file(url, filename, folder_path)
-			// fmt.Printf("downloading: %s/%s", folder_path, filename)
-		} else {
-			log.Fatal("Unknown error: %s", err)
+		// file_path := filepath.Join(folder_path, filename)
+		// if _, err := os.Stat(file_path); err == nil {
+		// 	fmt.Printf("file %s existed in %s", filename, folder_path)
+		file_existed := false
+		fetcher.db.Update(func(tx *bolt.Tx) error {
+			bucket, err := tx.CreateBucketIfNotExists([]byte("file_md5"))
+			if err != nil {
+				log.Fatal("Error: ", err)
+			}
+			file_md5 := bucket.Get([]byte(filename))
+			file_existed = file_md5 != nil
+			return nil
+		})
+		if !file_existed {
+			file_md5 := fetcher.con_client.download_file(url, filename, folder_path)
+			fmt.Printf("downloaded: %s/%s\n", folder_path, filename)
+			fetcher.db.Update(func(tx *bolt.Tx) error {
+				bucket, err := tx.CreateBucketIfNotExists([]byte("file_md5"))
+				if err != nil {
+					log.Fatal("Error: %s", err)
+				}
+				err = bucket.Put([]byte(filename), file_md5)
+				if err != nil {
+					log.Fatal("Error: %s", err)
+				}
+				return err
+			})
 		}
-
 	}
 }
 
@@ -163,11 +187,18 @@ func mode_gui() {
 func mode_default(CFG map[string]string) {
 	//download all by default
 	conn_clint := ConnClient{CFG["API_ENDPOINT"], CFG["TOKEN"], CFG["DESTINATION"]}
-	coursesList := getData(conn_clint, "courses", "", "", "")
+	fetcher_db, err := bolt.Open("fetcher.db", 0600, nil)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fetcher := Fetcher{fetcher_db, &conn_clint, CFG}
+
+	coursesList := fetcher.getData("courses", "", "", "")
 	// show_result(coursesList, "course_code")
 	// chosen_index := accept_choices()
+
 	for _, course := range coursesList {
-		course_handler(conn_clint, course, CFG["DESTINATION"])
+		fetcher.course_handler(course, CFG["DESTINATION"])
 	}
 }
 
