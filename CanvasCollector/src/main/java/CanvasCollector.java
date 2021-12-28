@@ -25,7 +25,7 @@ public class CanvasCollector
         return cfg_map;
     }
 
-    public static void main(String[] args)
+    public static String ping()
     {
         LinkedHashMap<String, String> cfg_map = load_config("cfg/config.yaml");
         if (cfg_map != null)
@@ -38,11 +38,11 @@ public class CanvasCollector
                 con.setRequestMethod("GET");
                 con.setRequestProperty("Content-Type", "application/json");
 //                System.out.println(con.getResponseCode());
-//                System.out.println(con.getResponseMessage());
+                return con.getResponseMessage();
             } catch (Exception e)
             {
                 e.printStackTrace();
             }
-
+        return null;
     }
 }
