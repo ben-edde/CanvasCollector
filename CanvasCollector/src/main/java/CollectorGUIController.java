@@ -42,6 +42,12 @@ public class CollectorGUIController implements Initializable
         update_list_view();
     }
 
+    @FXML
+    void download_selected_items()
+    {
+        Collector.download_selected_course_files(this.selectedDirectory.toString(), this.selectedItemsList);
+    }
+
     void update_list_view()
     {
         this.availableListView.setItems(this.availableItemsList);
@@ -79,7 +85,7 @@ public class CollectorGUIController implements Initializable
             selectedDirectoryText.setText(selectedDirectory.toString());
         }
     }
-    
+
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {

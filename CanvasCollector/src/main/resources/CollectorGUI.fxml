@@ -3,18 +3,19 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="CollectorGUIController">
+<AnchorPane prefHeight="450.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="CollectorGUIController">
    <children>
       <Label layoutX="274.0" layoutY="22.0" prefHeight="19.0" prefWidth="53.0" text="Collector" />
-      <Pane layoutX="9.0" layoutY="49.0" prefHeight="346.0" prefWidth="583.0">
+      <Pane layoutX="9.0" layoutY="42.0" prefHeight="404.0" prefWidth="583.0">
          <children>
-            <ListView fx:id="availableListView" editable="true" layoutX="10.0" layoutY="51.0" prefHeight="284.0" prefWidth="246.0" />
-            <ListView fx:id="selectedListView" layoutX="328.0" layoutY="54.0" prefHeight="284.0" prefWidth="246.0" />
-            <Button layoutX="271.0" layoutY="156.0" mnemonicParsing="false" onAction="#add_selected_item" text="&gt;&gt;" />
-            <Button layoutX="271.0" layoutY="225.0" mnemonicParsing="false" onAction="#remove_selected_item" text="&lt;&lt;" />
-            <Button layoutX="265.0" layoutY="98.0" mnemonicParsing="false" onAction="#fetch_items" text="Fetch" />
-            <TextField fx:id="selectedDirectoryText" layoutX="217.0" layoutY="11.0" />
-            <Button fx:id="selectDirectoryButton" layoutX="372.0" layoutY="11.0" mnemonicParsing="false" onAction="#choose_directory" text="Select Directory" />
+            <ListView fx:id="availableListView" editable="true" layoutX="9.0" layoutY="107.0" prefHeight="284.0" prefWidth="246.0" />
+            <ListView fx:id="selectedListView" layoutX="327.0" layoutY="110.0" prefHeight="284.0" prefWidth="246.0" />
+            <Button layoutX="270.0" layoutY="212.0" mnemonicParsing="false" onAction="#add_selected_item" text="&gt;&gt;" />
+            <Button layoutX="270.0" layoutY="281.0" mnemonicParsing="false" onAction="#remove_selected_item" text="&lt;&lt;" />
+            <Button layoutX="110.0" layoutY="61.0" mnemonicParsing="false" onAction="#fetch_items" text="Fetch" />
+            <TextField fx:id="selectedDirectoryText" layoutX="175.0" layoutY="14.0" />
+            <Button fx:id="selectDirectoryButton" layoutX="330.0" layoutY="14.0" mnemonicParsing="false" onAction="#choose_directory" text="Select Directory" />
+            <Button layoutX="415.0" layoutY="61.0" mnemonicParsing="false" onAction="#download_selected_items" prefHeight="25.0" prefWidth="71.0" text="Download" />
          </children>
       </Pane>
    </children>
