@@ -7,6 +7,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
@@ -102,18 +103,31 @@ public class CollectorGUIController implements Initializable
         }
     }
 
+    @FXML
+    void set_config()
+    {
+        Stage stage = new Stage();
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Choose Config");
+        File selectedFile = fileChooser.showOpenDialog(stage);
+        if (selectedFile != null)
+        {
+            this.collector.set_config(selectedFile.toString());
+            String cfgDestDir = this.collector.get_dest_dir();
+            if (cfgDestDir != null)
+            {
+                this.selectedDirectoryText.setText(cfgDestDir);
+                this.selectedDirectory = new File(cfgDestDir);
+            }
+        }
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
-        String cfgDestDir = this.collector.get_dest_dir();
-        if (cfgDestDir != null)
-        {
-            this.selectedDirectoryText.setText(cfgDestDir);
-            this.selectedDirectory = new File(cfgDestDir);
-        }
         this.availableListView.setCellFactory(param -> new ElementCell());
         this.selectedListView.setCellFactory(param -> new ElementCell());
-        fetch_items();
     }
 
     static class ElementCell extends ListCell<Map<String, Object>>

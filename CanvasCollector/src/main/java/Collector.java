@@ -36,12 +36,11 @@ public class Collector
     private final PoolingHttpClientConnectionManager connectionManager;
     private final HttpClientBuilder clientBuilder;
     private final CloseableHttpClient httpClient;
-    private final LinkedHashMap<String, String> cfgMap;
     private final ExecutorService executor;
+    private LinkedHashMap<String, String> cfgMap;
 
     private Collector()
     {
-        this.cfgMap = load_config("cfg/config.yaml");
         this.connectionManager = new PoolingHttpClientConnectionManager();
         this.clientBuilder = HttpClients.custom().setConnectionManager(connectionManager).setDefaultRequestConfig(
                 RequestConfig.custom().setCookieSpec(CookieSpecs.STANDARD).build());
@@ -70,6 +69,11 @@ public class Collector
             e.printStackTrace();
         }
         return cfg_map;
+    }
+
+    public void set_config(String cfg_filepath)
+    {
+        this.cfgMap = load_config(cfg_filepath);
     }
 
     public ExecutorService get_executor()
