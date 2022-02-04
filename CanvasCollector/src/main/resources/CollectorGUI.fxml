@@ -13,8 +13,8 @@
             <Button layoutX="270.0" layoutY="212.0" mnemonicParsing="false" onAction="#add_selected_item" text="&gt;&gt;" />
             <Button layoutX="270.0" layoutY="281.0" mnemonicParsing="false" onAction="#remove_selected_item" text="&lt;&lt;" />
             <Button layoutX="110.0" layoutY="61.0" mnemonicParsing="false" onAction="#fetch_items" text="Fetch" />
-            <TextField fx:id="selectedDirectoryText" layoutX="175.0" layoutY="14.0" />
-            <Button fx:id="selectDirectoryButton" layoutX="330.0" layoutY="14.0" mnemonicParsing="false" onAction="#choose_directory" text="Select Directory" />
+            <TextField fx:id="selectedDirectoryText" layoutX="56.0" layoutY="14.0" prefHeight="25.0" prefWidth="364.0" />
+            <Button fx:id="selectDirectoryButton" layoutX="426.0" layoutY="14.0" mnemonicParsing="false" onAction="#choose_directory" text="Select Directory" />
             <Button layoutX="415.0" layoutY="61.0" mnemonicParsing="false" onAction="#download_selected_items" prefHeight="25.0" prefWidth="71.0" text="Download" />
          </children>
       </Pane>

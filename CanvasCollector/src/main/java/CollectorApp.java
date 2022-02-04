@@ -4,12 +4,19 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-public class CollectorGUI extends Application
+public class CollectorApp extends Application
 {
+    Collector collector;
 
     public static void main(String[] args)
     {
         launch(args);
+    }
+
+    @Override
+    public void init()
+    {
+        this.collector = Collector.get_collector();
     }
 
     @Override
@@ -28,5 +35,13 @@ public class CollectorGUI extends Application
         {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void stop()
+    {
+        System.out.println("Called stop()");
+        this.collector.terminate();
+        System.out.println("Completed stop()");
     }
 }

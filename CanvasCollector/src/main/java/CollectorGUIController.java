@@ -26,18 +26,21 @@ public class CollectorGUIController implements Initializable
     @FXML
     public TextField selectedDirectoryText;
     File selectedDirectory;
+    Collector collector;
+
     ObservableList<Map<String, Object>> availableItemsList, selectedItemsList;
 
     public CollectorGUIController()
     {
         this.availableItemsList = FXCollections.observableArrayList();
         this.selectedItemsList = FXCollections.observableArrayList();
+        this.collector = Collector.get_collector();
     }
 
     @FXML
     void fetch_items()
     {
-        this.availableItemsList = FXCollections.observableArrayList((Collector.get_data("courses")));
+        this.availableItemsList = FXCollections.observableArrayList((collector.get_data("courses")));
         this.selectedItemsList = FXCollections.observableArrayList();
         update_list_view();
     }
@@ -45,7 +48,8 @@ public class CollectorGUIController implements Initializable
     @FXML
     void download_selected_items()
     {
-        Collector.download_selected_course_files(this.selectedDirectory.toString(), this.selectedItemsList);
+        if (this.selectedDirectory == null) return;
+        collector.download_selected_course_files(this.selectedDirectory.toString(), this.selectedItemsList);
     }
 
     void update_list_view()
@@ -89,6 +93,12 @@ public class CollectorGUIController implements Initializable
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
+        String cfgDestDir = this.collector.get_dest_dir();
+        if (cfgDestDir != null)
+        {
+            this.selectedDirectoryText.setText(cfgDestDir);
+            this.selectedDirectory = new File(cfgDestDir);
+        }
         this.availableListView.setCellFactory(param -> new ElementCell());
         this.selectedListView.setCellFactory(param -> new ElementCell());
         fetch_items();

@@ -39,4 +39,4 @@ javafx {
     modules = [ 'javafx.controls' , 'javafx.fxml' ]
 }
 
-mainClassName = 'CollectorGUI'
+mainClassName = 'CollectorApp'
