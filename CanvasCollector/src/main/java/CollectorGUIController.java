@@ -2,10 +2,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
@@ -20,12 +17,15 @@ import java.util.ResourceBundle;
 public class CollectorGUIController implements Initializable
 {
     @FXML
-    public ListView availableListView;
+    private ListView availableListView;
     @FXML
-    public ListView selectedListView;
+    private ListView selectedListView;
     @FXML
-    public TextField selectedDirectoryText;
+    private TextField selectedDirectoryText;
     File selectedDirectory;
+    @FXML
+    private CheckBox optionSearchAll;
+
     Collector collector;
 
     ObservableList<Map<String, Object>> availableItemsList, selectedItemsList;
@@ -40,7 +40,7 @@ public class CollectorGUIController implements Initializable
     @FXML
     void fetch_items()
     {
-        this.availableItemsList = FXCollections.observableArrayList((collector.get_data("courses")));
+        this.availableItemsList = FXCollections.observableArrayList((collector.get_data("courses",optionSearchAll.isSelected())));
         this.selectedItemsList = FXCollections.observableArrayList();
         update_list_view();
     }

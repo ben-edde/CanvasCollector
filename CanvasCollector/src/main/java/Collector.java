@@ -79,7 +79,7 @@ public class Collector
         return cfgMap.get("DESTINATION");
     }
 
-    public ArrayList<Map<String, Object>> get_data(String resource)
+    public ArrayList<Map<String, Object>> get_data(String resource,Boolean searchAll)
     {
         if (cfgMap == null) return null;
 
@@ -87,7 +87,8 @@ public class Collector
         {
             URIBuilder uriBuilder = new URIBuilder(cfgMap.get("API_ENDPOINT") + "/" + resource);
             uriBuilder.addParameter("per_page", "32767");
-//            uriBuilder.addParameter("enrollment_state", "active");
+            if (!searchAll && resource.equals("courses"))
+                uriBuilder.addParameter("enrollment_state", "active");
             URI uri = uriBuilder.build();
             HttpGet getMethod = new HttpGet(uri);
             getMethod.addHeader("Authorization", "Bearer  " + cfgMap.get("TOKEN"));
@@ -113,7 +114,7 @@ public class Collector
         try
         {
             String resourcePath = "courses/" + courseID + "/" + "folders";
-            return get_data(resourcePath);
+            return get_data(resourcePath,false);
         }
         catch (Exception e)
         {
@@ -127,7 +128,7 @@ public class Collector
         try
         {
             String resourcePath = "folders/" + folderID + "/" + "files";
-            return get_data(resourcePath);
+            return get_data(resourcePath,false);
         }
         catch (Exception e)
         {

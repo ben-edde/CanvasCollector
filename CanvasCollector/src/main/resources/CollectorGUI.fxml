@@ -16,6 +16,7 @@
             <TextField fx:id="selectedDirectoryText" layoutX="56.0" layoutY="14.0" prefHeight="25.0" prefWidth="364.0" />
             <Button fx:id="selectDirectoryButton" layoutX="426.0" layoutY="14.0" mnemonicParsing="false" onAction="#choose_directory" text="Select Directory" />
             <Button layoutX="415.0" layoutY="61.0" mnemonicParsing="false" onAction="#download_selected_items" prefHeight="25.0" prefWidth="71.0" text="Download" />
+            <CheckBox fx:id="optionSearchAll" layoutX="179.0" layoutY="65.0" mnemonicParsing="false" text="All" />
          </children>
       </Pane>
    </children>
