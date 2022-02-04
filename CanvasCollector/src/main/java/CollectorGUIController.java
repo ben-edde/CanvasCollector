@@ -13,22 +13,23 @@ import java.io.File;
 import java.net.URL;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.function.Consumer;
 
 public class CollectorGUIController implements Initializable
 {
+    File selectedDirectory;
+    Collector collector;
+    ObservableList<Map<String, Object>> availableItemsList, selectedItemsList;
     @FXML
     private ListView availableListView;
     @FXML
     private ListView selectedListView;
     @FXML
     private TextField selectedDirectoryText;
-    File selectedDirectory;
     @FXML
     private CheckBox optionSearchAll;
-
-    Collector collector;
-
-    ObservableList<Map<String, Object>> availableItemsList, selectedItemsList;
+    @FXML
+    private Label statusLabel;
 
     public CollectorGUIController()
     {
@@ -40,16 +41,27 @@ public class CollectorGUIController implements Initializable
     @FXML
     void fetch_items()
     {
-        this.availableItemsList = FXCollections.observableArrayList((collector.get_data("courses",optionSearchAll.isSelected())));
+        this.availableItemsList = FXCollections.observableArrayList(
+                (collector.get_data("courses", optionSearchAll.isSelected())));
         this.selectedItemsList = FXCollections.observableArrayList();
         update_list_view();
+        this.statusLabel.setText("OK");
     }
 
     @FXML
     void download_selected_items()
     {
+        Consumer<Boolean> update_status = (Boolean jobDone) ->
+        {
+            if (jobDone)
+            {this.statusLabel.setText("Download completed.");}
+            else
+            {this.statusLabel.setText("Download cancelled.");}
+        };
         if (this.selectedDirectory == null) return;
-        collector.download_selected_course_files(this.selectedDirectory.toString(), this.selectedItemsList);
+        this.statusLabel.setText("Downloading...");
+        collector.download_selected_course_files(this.selectedDirectory.toString(), this.selectedItemsList,
+                update_status);
     }
 
     void update_list_view()

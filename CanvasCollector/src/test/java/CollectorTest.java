@@ -76,7 +76,7 @@ class CollectorTest
         File testDirectoryFile = new File(testDirectory);
         testDirectoryFile.deleteOnExit();
 
-        this.collector.download_selected_course_files(testDirectory, testItemList);
+        this.collector.download_selected_course_files(testDirectory, testItemList,null);
     }
 
 }

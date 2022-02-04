@@ -2,22 +2,27 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 
-<AnchorPane prefHeight="450.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="CollectorGUIController">
+<AnchorPane prefHeight="450.0" prefWidth="650.0" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="CollectorGUIController">
    <children>
-      <Label layoutX="274.0" layoutY="22.0" prefHeight="19.0" prefWidth="53.0" text="Collector" />
-      <Pane layoutX="9.0" layoutY="42.0" prefHeight="404.0" prefWidth="583.0">
+      <Label alignment="CENTER" layoutX="271.0" layoutY="16.0" prefHeight="30.0" prefWidth="108.0" text="Collector">
+         <font>
+            <Font size="20.0" />
+         </font></Label>
+      <Pane layoutY="41.0" prefHeight="409.0" prefWidth="650.0">
          <children>
-            <ListView fx:id="availableListView" editable="true" layoutX="9.0" layoutY="107.0" prefHeight="284.0" prefWidth="246.0" />
-            <ListView fx:id="selectedListView" layoutX="327.0" layoutY="110.0" prefHeight="284.0" prefWidth="246.0" />
-            <Button layoutX="270.0" layoutY="212.0" mnemonicParsing="false" onAction="#add_selected_item" text="&gt;&gt;" />
-            <Button layoutX="270.0" layoutY="281.0" mnemonicParsing="false" onAction="#remove_selected_item" text="&lt;&lt;" />
-            <Button layoutX="110.0" layoutY="61.0" mnemonicParsing="false" onAction="#fetch_items" text="Fetch" />
-            <TextField fx:id="selectedDirectoryText" layoutX="56.0" layoutY="14.0" prefHeight="25.0" prefWidth="364.0" />
-            <Button fx:id="selectDirectoryButton" layoutX="426.0" layoutY="14.0" mnemonicParsing="false" onAction="#choose_directory" text="Select Directory" />
-            <Button layoutX="415.0" layoutY="61.0" mnemonicParsing="false" onAction="#download_selected_items" prefHeight="25.0" prefWidth="71.0" text="Download" />
-            <CheckBox fx:id="optionSearchAll" layoutX="179.0" layoutY="65.0" mnemonicParsing="false" text="All" />
+            <ListView fx:id="availableListView" editable="true" layoutX="14.0" layoutY="114.0" prefHeight="284.0" prefWidth="281.0" />
+            <ListView fx:id="selectedListView" layoutX="355.0" layoutY="114.0" prefHeight="284.0" prefWidth="281.0" />
+            <Button layoutX="309.0" layoutY="209.0" mnemonicParsing="false" onAction="#add_selected_item" text="&gt;&gt;" />
+            <Button layoutX="309.0" layoutY="278.0" mnemonicParsing="false" onAction="#remove_selected_item" text="&lt;&lt;" />
+            <Button layoutX="132.0" layoutY="70.0" mnemonicParsing="false" onAction="#fetch_items" text="Fetch" />
+            <TextField fx:id="selectedDirectoryText" layoutX="179.0" layoutY="20.0" prefHeight="25.0" prefWidth="364.0" />
+            <Button fx:id="selectDirectoryButton" layoutX="72.0" layoutY="20.0" mnemonicParsing="false" onAction="#choose_directory" text="Select Directory" />
+            <Button layoutX="460.0" layoutY="70.0" mnemonicParsing="false" onAction="#download_selected_items" prefHeight="25.0" prefWidth="71.0" text="Download" />
+            <CheckBox fx:id="optionSearchAll" layoutX="191.0" layoutY="74.0" mnemonicParsing="false" text="All" />
          </children>
       </Pane>
+      <Label fx:id="statusLabel" alignment="CENTER" layoutX="450.0" layoutY="14.0" prefHeight="17.0" prefWidth="162.0" text="Status" />
    </children>
 </AnchorPane>

@@ -1,4 +1,5 @@
 import com.fasterxml.jackson.databind.ObjectMapper;
+import javafx.application.Platform;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
@@ -26,9 +27,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.function.Consumer;
 
 public class Collector
@@ -73,13 +72,18 @@ public class Collector
         return cfg_map;
     }
 
+    public ExecutorService get_executor()
+    {
+        return executor;
+    }
+
     public String get_dest_dir()
     {
         if (this.cfgMap == null) return null;
         return cfgMap.get("DESTINATION");
     }
 
-    public ArrayList<Map<String, Object>> get_data(String resource,Boolean searchAll)
+    public ArrayList<Map<String, Object>> get_data(String resource, Boolean searchAll)
     {
         if (cfgMap == null) return null;
 
@@ -87,8 +91,7 @@ public class Collector
         {
             URIBuilder uriBuilder = new URIBuilder(cfgMap.get("API_ENDPOINT") + "/" + resource);
             uriBuilder.addParameter("per_page", "32767");
-            if (!searchAll && resource.equals("courses"))
-                uriBuilder.addParameter("enrollment_state", "active");
+            if (!searchAll && resource.equals("courses")) uriBuilder.addParameter("enrollment_state", "active");
             URI uri = uriBuilder.build();
             HttpGet getMethod = new HttpGet(uri);
             getMethod.addHeader("Authorization", "Bearer  " + cfgMap.get("TOKEN"));
@@ -114,7 +117,7 @@ public class Collector
         try
         {
             String resourcePath = "courses/" + courseID + "/" + "folders";
-            return get_data(resourcePath,false);
+            return get_data(resourcePath, false);
         }
         catch (Exception e)
         {
@@ -128,7 +131,7 @@ public class Collector
         try
         {
             String resourcePath = "folders/" + folderID + "/" + "files";
-            return get_data(resourcePath,false);
+            return get_data(resourcePath, false);
         }
         catch (Exception e)
         {
@@ -150,7 +153,6 @@ public class Collector
             InputStream inputStream = entity.getContent();
             Path destinationPath = Paths.get(fileDestinationPath);
             Files.copy(inputStream, destinationPath, StandardCopyOption.REPLACE_EXISTING);
-
         }
         catch (RequestAbortedException e)
         {
@@ -162,7 +164,15 @@ public class Collector
         }
     }
 
-    public void download_selected_course_files(String selectedDirectory, List<Map<String, Object>> selectedItemsList)
+    public void download_selected_course_files(String selectedDirectory, List<Map<String, Object>> selectedItemsList,
+                                               Consumer updateLabel)
+    {
+        this.executor.execute(
+                () -> download_selected_course_files_worker(selectedDirectory, selectedItemsList, updateLabel));
+    }
+
+    public void download_selected_course_files_worker(String selectedDirectory,
+                                                      List<Map<String, Object>> selectedItemsList, Consumer updateLabel)
     {
         final Consumer<String> prepare_directory = (String directoryPathStr) -> {
             Path directoryPath = Paths.get(directoryPathStr);
@@ -174,7 +184,7 @@ public class Collector
         };
 
         prepare_directory.accept(selectedDirectory);
-
+        ArrayList<Future> taskList = new ArrayList<>();
         for (var eachCourse : selectedItemsList)
         {
             Path coursePath = Paths.get(selectedDirectory, eachCourse.get("name").toString());
@@ -200,13 +210,27 @@ public class Collector
                                     eachFile.get("filename").toString());
                             Runnable task = () -> download_file(courseFolderFilePath.toString(),
                                     eachFile.get("url").toString());
-                            executor.execute(task);
+                            taskList.add(executor.submit(task));
                         }
                     }
                 }
             }
-
         }
+        boolean jobDone = true;
+        try
+        {
+            for (var job : taskList)
+            {
+                job.get();
+                jobDone = jobDone && job.isDone();
+            }
+        }
+        catch (ExecutionException | InterruptedException e)
+        {
+            e.printStackTrace();
+        }
+        boolean finalJobDone = jobDone;
+        Platform.runLater(() -> {updateLabel.accept(finalJobDone);});
     }
 
     public void terminate()
