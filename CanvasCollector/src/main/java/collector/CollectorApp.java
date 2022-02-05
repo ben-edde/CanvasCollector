@@ -30,7 +30,7 @@ public class CollectorApp extends Application
             Parent root = loader.load();
             Scene scene = new Scene(root);
             primaryStage.setScene(scene);
-            primaryStage.setTitle("collector.Collector");
+            primaryStage.setTitle("Collector");
             primaryStage.show();
         }
         catch (Exception e)
