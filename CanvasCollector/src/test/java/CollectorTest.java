@@ -1,3 +1,4 @@
+import collector.Collector;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -15,6 +16,7 @@ class CollectorTest
     void setup()
     {
         this.collector = Collector.get_collector();
+        this.collector.set_config("cfg/config.yaml");
     }
 
     @Test

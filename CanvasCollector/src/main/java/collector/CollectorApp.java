@@ -1,3 +1,5 @@
+package collector;
+
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -28,7 +30,7 @@ public class CollectorApp extends Application
             Parent root = loader.load();
             Scene scene = new Scene(root);
             primaryStage.setScene(scene);
-            primaryStage.setTitle("Collector");
+            primaryStage.setTitle("collector.Collector");
             primaryStage.show();
         }
         catch (Exception e)

@@ -1,3 +1,5 @@
+package collector;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.application.Platform;
 import org.apache.http.HttpEntity;
